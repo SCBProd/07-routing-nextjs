@@ -1,7 +1,6 @@
 async function fetchNotes(tag) {
   let url = 'https://your-backend-url/notes';
 
-  // якщо НЕ all → додаємо query
   if (tag !== 'all') {
     url += `?tag=${tag}`;
   }
@@ -18,7 +17,9 @@ async function fetchNotes(tag) {
 }
 
 export default async function NotesPage({ params }) {
-  const { tag } = params;
+  const slugArray = params.slug; // 👈 це масив
+
+  const tag = slugArray?.[0] || 'all';
 
   const notes = await fetchNotes(tag);
 
