@@ -1,41 +1,41 @@
-async function fetchNotes(tag) {
-  let url = 'https://your-backend-url/notes';
+import { QueryClient, dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import axios from "axios";
+import NotesClient from "./Notes.client";
+import type { Note } from "@/types/note"
 
-  if (tag !== 'all') {
-    url += `?tag=${tag}`;
-  }
 
-  const res = await fetch(url, {
-    cache: 'no-store',
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to fetch notes');
-  }
-
-  return res.json();
+ interface NotesResponse {
+  notes: Note[];
+  totalPages: number;
 }
 
-export default async function NotesPage({ params }) {
-  const slugArray = params.slug; // 👈 це масив
+const API_URL = "https://notehub-public.goit.study/api/notes";
+const TOKEN = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
 
-  const tag = slugArray?.[0] || 'all';
+export default async function NotesPage() {
+  const queryClient = new QueryClient();
 
-  const notes = await fetchNotes(tag);
+  const page = 1;
+  const perPage = 12;
+  const search = "";
+
+  await queryClient.prefetchQuery({
+    queryKey: ["notes", page, perPage, search],
+    queryFn: async () => {
+      const res = await axios.get(API_URL, {
+        params: { page, perPage, search },
+        headers: {
+          Authorization: `Bearer ${TOKEN}`,
+        },
+      });
+
+      return res.data as NotesResponse;
+    },
+  });
 
   return (
-    <div>
-      <h2>{tag === 'all' ? 'All notes' : `Tag: ${tag}`}</h2>
-
-      <ul>
-        {notes.map(note => (
-          <li key={note.id}>
-            <h3>{note.title}</h3>
-            <p>{note.content}</p>
-            <small>{note.tag}</small>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <NotesClient />
+    </HydrationBoundary>
   );
 }
