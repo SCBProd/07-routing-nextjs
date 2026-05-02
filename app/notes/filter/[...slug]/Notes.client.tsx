@@ -15,7 +15,7 @@ const NoteDetailsClient = ({ tag }: Props) => {
 
   const { data: note, isLoading, error } = useQuery({
     queryKey: ["note", id, tag],
-    queryFn: () => fetchNoteById(id, tag),
+    queryFn: () => fetchNoteById(id),
   });
 
   const handleClose = () => {
