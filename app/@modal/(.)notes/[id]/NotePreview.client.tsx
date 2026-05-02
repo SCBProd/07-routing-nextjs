@@ -1,55 +1,41 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { useParams, useRouter } from "next/navigation";
+import { fetchNoteById } from "@/lib/api";
+import Modal from "@/components/Modal/Modal";
 
-type Note = {
-  id: string;
-  title: string;
-  content: string;
-  tags?: string[];
-};
-
-export default function NotePreview() {
-  const params = useParams();
+const NoteDetailsClient = () => {
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const router = useRouter();
 
-  const id = params?.id as string;
-
-  const { data, isLoading, isError } = useQuery<Note>({
+  const { data: note, isLoading, error } = useQuery({
     queryKey: ["note", id],
-    queryFn: async () => {
-      const res = await axios.get(`https://your-api-url/notes/${id}`);
-      return res.data;
-    },
+    queryFn: () => fetchNoteById(id),
     enabled: !!id,
+    refetchOnMount: false,
   });
 
+  if (isLoading) return <p>Loading...</p>;
+
+  if (error) return <p>Error: {(error as Error).message}</p>;
+
+  if (!note) return <p>Note not found</p>;
+
+  const formattedDate = note.updatedAt
+    ? `Updated at: ${new Date(note.updatedAt).toLocaleString()}`
+    : `Created at: ${new Date(note.createdAt).toLocaleString()}`;
+
   return (
-    <div>
+    <Modal onClose={() => router.back()}>
       <div>
-        <button onClick={() => router.back()}>Close</button>
+        <h2>{note.title}</h2>
+        <p>{note.content}</p>
+        <p>{formattedDate}</p>
       </div>
-
-      {isLoading && <p>Loading...</p>}
-
-      {isError && <p>Failed to load note</p>}
-
-      {data && (
-        <div>
-          <h2>{data.title}</h2>
-          <p>{data.content}</p>
-
-          {data.tags?.length ? (
-            <ul>
-              {data.tags.map((tag) => (
-                <li key={tag}>{tag}</li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-      )}
-    </div>
+    </Modal>
   );
-}
+};
+
+export default NoteDetailsClient;
