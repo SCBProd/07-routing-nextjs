@@ -1,42 +1,65 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useParams, useRouter } from "next/navigation";
-import { fetchNoteById } from "@/lib/api";
-import Modal from "@/components/Modal/Modal";
+import { fetchNotes } from "@/lib/api";
+
+import SearchBox from "@/components/SearchBox";
+import NoteList from "@/components/NoteList";
+import Pagination from "@/components/Pagination";
+import NoteForm from "@/components/NoteForm";
 
 type Props = {
   tag?: string;
 };
 
-const NoteDetailsClient = ({ tag }: Props) => {
-  const { id } = useParams<{ id: string }>();
-  const router = useRouter();
+export default function NotesClient({ tag }: Props) {
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+  const [page, setPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { data: note, isLoading, error } = useQuery({
-    queryKey: ["note", id, tag],
-    queryFn: () => fetchNoteById(id),
+  // debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["notes", page, tag, debouncedSearch],
+    queryFn: () =>
+      fetchNotes({
+        page,
+        tag: tag || undefined,
+        search: debouncedSearch || undefined,
+      }),
   });
 
-  const handleClose = () => {
-    router.back();
-  };
-
-  if (isLoading) return null;
-
-  if (error || !note) return <p>Some error..</p>;
-
-  const formattedDate = note.updatedAt
-    ? `Updated at: ${note.updatedAt}`
-    : `Created at: ${note.createdAt}`;
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Error loading notes</p>;
 
   return (
-    <Modal onClose={handleClose}>
-      <h2>{note.title}</h2>
-      <p>{note.content}</p>
-      <p>{formattedDate}</p>
-    </Modal>
-  );
-};
+    <>
+      <SearchBox value={search} onChange={setSearch} />
 
-export default NoteDetailsClient;
+      <button onClick={() => setIsModalOpen(true)}>
+        Create note
+      </button>
+
+      <NoteList notes={data?.notes ?? []} />
+
+      <Pagination
+        page={page}
+        totalPages={data?.totalPages ?? 1}
+        onChange={setPage}
+      />
+
+      {isModalOpen && (
+        <NoteForm onClose={() => setIsModalOpen(false)} />
+      )}
+    </>
+  );
+}

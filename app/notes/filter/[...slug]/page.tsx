@@ -12,18 +12,20 @@ const API_URL = "https://notehub-public.goit.study/api/notes";
 const TOKEN = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
 
 type Props = {
-  params: {
-    slug?: string;
-  };
+  params: Promise<{
+    slug: string[];
+  }>;
 };
 
 export default async function NotesPage({ params }: Props) {
+  const { slug } = await params;
+
   const queryClient = new QueryClient();
 
   const page = 1;
   const perPage = 12;
   const search = "";
-  const tag = params?.slug && params.slug !== "all" ? params.slug : "";
+  const tag = slug?.[0] !== "all" ? slug?.[0] : "";
 
   await queryClient.prefetchQuery({
     queryKey: ["notes", page, perPage, search, tag],

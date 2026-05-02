@@ -18,9 +18,7 @@ const NoteDetailsClient = () => {
   });
 
   if (isLoading) return <p>Loading...</p>;
-
   if (error) return <p>Error: {(error as Error).message}</p>;
-
   if (!note) return <p>Note not found</p>;
 
   const formattedDate = note.updatedAt
@@ -30,6 +28,11 @@ const NoteDetailsClient = () => {
   return (
     <Modal onClose={() => router.back()}>
       <div>
+       
+        <button onClick={() => router.back()}>
+          Close
+        </button>
+
         <h2>{note.title}</h2>
         <p>{note.content}</p>
         <p>{formattedDate}</p>
