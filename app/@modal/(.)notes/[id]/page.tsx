@@ -1,10 +1,7 @@
 import { QueryClient, dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import axios from "axios";
+import { fetchNoteById } from "@/lib/api";
 import Modal from "@/components/Modal/Modal";
 import NoteDetailsClient from "@/app/notes/[id]/NoteDetails.client";
-
-const API_URL = "https://notehub-public.goit.study/api/notes";
-const TOKEN = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -17,15 +14,7 @@ export default async function Page({ params }: Props) {
 
   await queryClient.prefetchQuery({
     queryKey: ["note", id],
-    queryFn: async () => {
-      const res = await axios.get(`${API_URL}/${id}`, {
-        headers: {
-          Authorization: `Bearer ${TOKEN}`,
-        },
-      });
-
-      return res.data;
-    },
+    queryFn: () => fetchNoteById(id),
   });
 
   return (

@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchNotes } from "@/lib/api";
 
-import SearchBox from "@/components/SearchBox";
-import NoteList from "@/components/NoteList";
-import Pagination from "@/components/Pagination";
-import NoteForm from "@/components/NoteForm";
+import SearchBox from "@/components/SearchBox/SearchBox";
+import NoteList from "@/components/NoteList/NoteList";
+import Pagination from "@/components/Pagination/Pagination";
+import NoteForm from "@/components/NoteForm/NoteForm";
+import Modal from "@/components/Modal/Modal";
 
 type Props = {
   tag?: string;
@@ -36,6 +37,7 @@ export default function NotesClient({ tag }: Props) {
         tag: tag || undefined,
         search: debouncedSearch || undefined,
       }),
+    refetchOnMount: false,
   });
 
   if (isLoading) return <p>Loading...</p>;
@@ -52,13 +54,15 @@ export default function NotesClient({ tag }: Props) {
       <NoteList notes={data?.notes ?? []} />
 
       <Pagination
-        page={page}
+        currentPage={page}
         totalPages={data?.totalPages ?? 1}
-        onChange={setPage}
+        setPage={setPage}
       />
 
       {isModalOpen && (
-        <NoteForm onClose={() => setIsModalOpen(false)} />
+        <Modal onClose={() => setIsModalOpen(false)}>
+          <NoteForm onClose={() => setIsModalOpen(false)} />
+        </Modal>
       )}
     </>
   );

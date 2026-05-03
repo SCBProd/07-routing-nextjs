@@ -28,13 +28,15 @@ const NoteDetailsClient = () => {
   return (
     <Modal onClose={() => router.back()}>
       <div>
-       
         <button onClick={() => router.back()}>
           Close
         </button>
 
         <h2>{note.title}</h2>
         <p>{note.content}</p>
+
+        {note.tag && <p>Tag: {note.tag}</p>}
+
         <p>{formattedDate}</p>
       </div>
     </Modal>
