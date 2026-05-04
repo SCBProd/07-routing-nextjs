@@ -43,6 +43,8 @@ export default function NotesClient({ tag }: Props) {
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error loading notes</p>;
 
+  const notes = data?.notes ?? [];
+
   return (
     <>
       <SearchBox value={search} onChange={setSearch} />
@@ -51,7 +53,7 @@ export default function NotesClient({ tag }: Props) {
         Create note
       </button>
 
-      <NoteList notes={data?.notes ?? []} />
+      {notes.length > 0 && <NoteList notes={notes} />}
 
       <Pagination
         currentPage={page}

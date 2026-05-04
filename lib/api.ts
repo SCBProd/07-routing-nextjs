@@ -2,8 +2,6 @@ import axios from "axios";
 import type { AxiosResponse } from "axios";
 import type { Note, CreateNoteDto } from "@/types/note";
 
-
-
 export interface NotesResponse {
   notes: Note[];
   totalPages: number;
@@ -11,16 +9,18 @@ export interface NotesResponse {
 
 export interface ApiError {
   message: string;
-  error?: string; }
-
+  error?: string;
+}
 
 const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
 
-const authHeader = {
+// 🔥 створюємо інстанс axios
+const api = axios.create({
+  baseURL: "https://notehub-public.goit.study/api",
   headers: {
     Authorization: `Bearer ${token}`,
   },
-};
+});
 
 // GET notes
 export const fetchNotes = async (params: {
@@ -30,13 +30,9 @@ export const fetchNotes = async (params: {
   perPage?: number;
   sortBy?: "created" | "updated";
 }): Promise<NotesResponse> => {
-  const response: AxiosResponse<NotesResponse> = await axios.get(
-    "/notes",
-    {
-      params,
-      ...authHeader,
-    }
-  );
+  const response: AxiosResponse<NotesResponse> = await api.get("/notes", {
+    params,
+  });
 
   return response.data;
 };
@@ -45,11 +41,7 @@ export const fetchNotes = async (params: {
 export const createNote = async (
   data: CreateNoteDto
 ): Promise<Note> => {
-  const response: AxiosResponse<Note> = await axios.post(
-    "/notes",
-    data,
-    authHeader
-  );
+  const response: AxiosResponse<Note> = await api.post("/notes", data);
 
   return response.data;
 };
@@ -58,22 +50,16 @@ export const createNote = async (
 export const deleteNote = async (
   id: string
 ): Promise<Note> => {
-  const response: AxiosResponse<Note> = await axios.delete(
-    `/notes/${id}`,
-    authHeader
-  );
+  const response: AxiosResponse<Note> = await api.delete(`/notes/${id}`);
 
   return response.data;
 };
 
-//oтримання деталей однієї нотатки за її ідентифікатором.
+// GET note by id
 export const fetchNoteById = async (
   id: string
 ): Promise<Note> => {
-  const response: AxiosResponse<Note> = await axios.get(
-    `/notes/${id}`,
-    authHeader
-  );
+  const response: AxiosResponse<Note> = await api.get(`/notes/${id}`);
 
   return response.data;
 };
